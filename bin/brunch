@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+# quick git branch switcher
+
+set -eu
+
+# check for git availability
+if [ ! -x "$(which git 2>/dev/null)" ]; then
+  echo "git command missing" >&2
+  exit 1
+fi
+
+# check for minimum git version
+(echo min version 1.6.3; git --version) | sort -Vk3 | tail -1 | grep -q git
+status=$?
+[ $status -ne 0 ] && echo "brunch needs git version 1.6.3+"
+
+# check for fzf tool
+if [ ! -x "$(which fzf 2>/dev/null)" ]; then
+  echo "fzf is a prerequisite for this script, please install: https://github.com/junegunn/fzf" >&2
+  exit 1
+fi
+
+# this needs git version 1.6.3+
+current="$(git rev-parse --abbrev-ref HEAD)"
+
+preview='git show --pretty=short --color=always --dirstat {}'
+preview_window='right,60%,nofollow'
+selected=$( (git for-each-ref refs/heads/ --format='%(refname:short)' ) | fzf -0 -1 --tac -q "${1:-""}" --prompt "$current> " --preview "${preview}" --preview-window "${preview_window}")
+if [ -n "$selected" ]; then
+  git checkout "${selected}"
+fi
