@@ -23,9 +23,10 @@ fi
 # this needs git version 1.6.3+
 current="$(git rev-parse --abbrev-ref HEAD)"
 
-preview='git show --pretty=short --color=always --dirstat {}'
+preview='git show --pretty=medium --color=always --dirstat {}'
 preview_window='right,60%,nofollow'
-selected=$( (git for-each-ref refs/heads/ --format='%(refname:short)' ) | fzf -0 -1 --tac -q "${1:-""}" --prompt "$current> " --preview "${preview}" --preview-window "${preview_window}")
+branches=$(git for-each-ref refs/heads/ --format='%(refname:short)')
+selected=$( echo "$branches" | fzf -0 -1 --tac -q "${1:-""}" --prompt "$current> " --preview "${preview}" --preview-window "${preview_window}")
 if [ -n "$selected" ]; then
   git checkout "${selected}"
 fi
